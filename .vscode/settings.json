@@ -1,0 +1,10 @@
+{
+  "biome.enabled": true,
+  "biome.requireConfiguration": true,
+  "biome.configurationPath": "biome.json",
+  "editor.codeActionsOnSave": {
+    "source.organizeImports.biome": "explicit"
+  },
+  "editor.formatOnSave": true,
+  "typescript.tsdk": "./node_modules/typescript/lib"
+}
