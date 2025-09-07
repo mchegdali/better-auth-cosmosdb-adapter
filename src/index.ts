@@ -33,7 +33,7 @@ export interface CosmosDBAdapterConfig {
   debugLogs?: AdapterDebugLogs;
 
   /**
-   * If the container names in the schema are plural.
+   * If the container names are plural, set this to true.
    */
   usePlural?: boolean;
 }
@@ -237,7 +237,6 @@ export function cosmosdbAdapter(
 
           return resources[0] || 0;
         },
-
         async update({ model, where, update }) {
           const container = getContainer(model);
 

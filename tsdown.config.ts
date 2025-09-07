@@ -1,6 +1,6 @@
 import { defineConfig } from "tsdown";
 
-export default defineConfig(({ minify }) => ({
+export default defineConfig({
   // Entry point - will be created as src/index.ts
   entry: "src/index.ts",
 
@@ -11,7 +11,9 @@ export default defineConfig(({ minify }) => ({
   format: ["es", "cjs"],
 
   // Generate TypeScript declaration files
-  dts: true,
+  dts: {
+    sourcemap: false,
+  },
 
   // Clean output directory before build
   clean: true,
@@ -31,8 +33,5 @@ export default defineConfig(({ minify }) => ({
     js: format === "cjs" ? ".cjs" : ".js",
   }),
 
-  // Minify in production
-  minify: minify ?? false,
-
   exports: true,
-}));
+});

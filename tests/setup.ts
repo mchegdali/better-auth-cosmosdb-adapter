@@ -36,25 +36,29 @@ export async function setupDatabase(client: CosmosClient) {
 }
 
 export async function setupContainers(db: Database) {
-  const { container: user } = await db.containers.createIfNotExists({
-    id: COSMOS_CONFIG.containers.user,
-    partitionKey: "/id",
-  });
-
-  const { container: account } = await db.containers.createIfNotExists({
-    id: COSMOS_CONFIG.containers.account,
-    partitionKey: "/id",
-  });
-
-  const { container: session } = await db.containers.createIfNotExists({
-    id: COSMOS_CONFIG.containers.session,
-    partitionKey: "/id",
-  });
-
-  const { container: verification } = await db.containers.createIfNotExists({
-    id: COSMOS_CONFIG.containers.verification,
-    partitionKey: "/id",
-  });
+  const [
+    { container: user },
+    { container: account },
+    { container: session },
+    { container: verification },
+  ] = await Promise.all([
+    db.containers.createIfNotExists({
+      id: COSMOS_CONFIG.containers.user,
+      partitionKey: "/id",
+    }),
+    db.containers.createIfNotExists({
+      id: COSMOS_CONFIG.containers.account,
+      partitionKey: "/id",
+    }),
+    db.containers.createIfNotExists({
+      id: COSMOS_CONFIG.containers.session,
+      partitionKey: "/id",
+    }),
+    db.containers.createIfNotExists({
+      id: COSMOS_CONFIG.containers.verification,
+      partitionKey: "/id",
+    }),
+  ]);
 
   const containers = { user, account, verification, session };
 
