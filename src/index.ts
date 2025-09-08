@@ -1,13 +1,9 @@
-/** biome-ignore-all lint/suspicious/noExplicitAny: Temporary until we have a better type for CosmosDB */
+import type { DeleteOperation, FeedOptions, ReplaceOperation, SqlQuerySpec } from "@azure/cosmos";
 import {
   BulkOperationType,
   Container,
-  type DeleteOperation,
   ErrorResponse,
-  type FeedOptions,
-  type ReplaceOperation,
   RestError,
-  type SqlQuerySpec,
   TimeoutError,
 } from "@azure/cosmos";
 import { BetterAuthError } from "better-auth";
@@ -15,16 +11,49 @@ import { type AdapterDebugLogs, createAdapter } from "better-auth/adapters";
 import type { Where } from "better-auth/types";
 import type { SortBy } from "./types.js";
 
-type SqlOperator = "eq" | "ne" | "lt" | "lte" | "gt" | "gte";
+type WhereOperator = NonNullable<Where["operator"]>;
 
-const sqlOperators: Readonly<Record<SqlOperator, string>> = Object.freeze({
-  eq: "=",
-  ne: "!=",
-  lt: "<",
-  lte: "<=",
-  gt: ">",
-  gte: ">=",
-});
+type SqlQueryFunctionParams = {
+  paramName: string;
+  fieldName: string;
+};
+type SqlQueryFunction = ({ paramName, fieldName }: SqlQueryFunctionParams) => string;
+
+const whereOperators: { [Key in WhereOperator]: SqlQueryFunction } = {
+  eq({ paramName, fieldName }) {
+    return `c.${fieldName} = ${paramName}`;
+  },
+  ne({ paramName, fieldName }) {
+    return `c.${fieldName} 1= ${paramName}`;
+  },
+  gt({ paramName, fieldName }) {
+    return `c.${fieldName} > ${paramName}`;
+  },
+  gte({ paramName, fieldName }) {
+    return `c.${fieldName} >= ${paramName}`;
+  },
+  lt({ paramName, fieldName }) {
+    return `c.${fieldName} < ${paramName}`;
+  },
+  lte({ paramName, fieldName }) {
+    return `c.${fieldName} <= ${paramName}`;
+  },
+  contains({ paramName, fieldName }) {
+    return `CONTAINS(c.${fieldName}, ${paramName})`;
+  },
+  starts_with({ paramName, fieldName }) {
+    return `STARTSWITH(c.${fieldName}, ${paramName})`;
+  },
+  ends_with({ paramName, fieldName }) {
+    return `ENDSWITH(c.${fieldName}, ${paramName})`;
+  },
+  in({ paramName, fieldName }) {
+    return `ARRAY_CONTAINS(${paramName}, c.${fieldName})`;
+  },
+  not_in({ paramName, fieldName }) {
+    return `NOT ARRAY_CONTAINS(${paramName}, c.${fieldName})`;
+  },
+};
 
 export interface CosmosDBAdapterConfig {
   /**
@@ -105,20 +134,7 @@ export function cosmosdbAdapter(
           const operator = condition.operator ?? "eq";
           const connector = condition.connector ?? "AND";
 
-          let conditionStr: string;
-          if (operator === "starts_with") {
-            conditionStr = `STARTSWITH(c.${fieldName}, ${paramName})`;
-          } else if (operator === "ends_with") {
-            conditionStr = `ENDSWITH(c.${fieldName}, ${paramName})`;
-          } else if (operator === "contains") {
-            conditionStr = `CONTAINS(c.${fieldName}, ${paramName})`;
-          } else if (operator === "in") {
-            conditionStr = `ARRAY_CONTAINS(${paramName}, c.${fieldName})`;
-          } else if (operator === "not_in") {
-            conditionStr = `NOT ARRAY_CONTAINS(${paramName}, c.${fieldName})`;
-          } else {
-            conditionStr = `c.${fieldName} ${sqlOperators[operator]} ${paramName}`;
-          }
+          const conditionStr = whereOperators[operator]({ paramName, fieldName });
 
           querySpec.query += ` ${connector} ${conditionStr}`;
           querySpec.parameters.push({ name: paramName, value: paramValue });
@@ -270,6 +286,7 @@ export function cosmosdbAdapter(
             if (!replaceResponse.resource) {
               return null;
             }
+
             return replaceResponse.resource;
           } catch (error) {
             if (error instanceof ErrorResponse) {
@@ -286,7 +303,6 @@ export function cosmosdbAdapter(
         async updateMany({ model, where, update }) {
           const container = getContainer(model);
 
-          // Find all items to update
           const querySpec: Required<SqlQuerySpec> = { query: "SELECT * FROM c", parameters: [] };
           const whereConditions = convertWhereClause(model, where);
           querySpec.query += ` ${whereConditions.query}`;
@@ -311,7 +327,6 @@ export function cosmosdbAdapter(
             }
           }
 
-          // Prepare bulk update operations
           const replaceOperations: ReplaceOperation[] = updatedItems.map((item) => ({
             operationType: BulkOperationType.Replace,
             partitionKey: item.id, // Using id as partition key
@@ -319,7 +334,6 @@ export function cosmosdbAdapter(
             resourceBody: item,
           }));
 
-          // Execute bulk delete
           const bulkResponse = await container.items.executeBulkOperations(replaceOperations);
           const updatedCount = bulkResponse.filter(
             (operationResult) => operationResult.response?.statusCode === 200,
@@ -368,13 +382,11 @@ export function cosmosdbAdapter(
             id: res.id,
           }));
 
-          // Not using executeBulkOperations because the performance is much worse
-          const bulkResponse = await container.items.bulk(deleteOperations);
+          const bulkResponse = await container.items.executeBulkOperations(deleteOperations);
 
           let successCount = 0;
-          for (let i = 0; i < bulkResponse.length; i++) {
-            const operationResult = bulkResponse[i];
-            if (operationResult?.statusCode === 204) {
+          for (const operationResult of bulkResponse) {
+            if (operationResult.response?.statusCode === 204) {
               successCount++;
             }
           }
