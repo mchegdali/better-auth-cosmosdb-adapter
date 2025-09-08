@@ -26,6 +26,9 @@
   ],
   "author": "Moustapha Chegdali",
   "license": "GPL-3.0-only",
+  "files": [
+    "dist"
+  ],
   "devDependencies": {
     "@azure/cosmos": "^4.5.0",
     "@biomejs/biome": "^2.1.4",
