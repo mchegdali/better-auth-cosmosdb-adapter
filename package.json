@@ -1,7 +1,7 @@
 {
   "private": false,
   "name": "@mchegdali/better-auth-cosmosdb-adapter",
-  "version": "1.0.0",
+  "version": "1.0.1",
   "description": "CosmosDB database adapter for Better-Auth",
   "type": "module",
   "scripts": {
