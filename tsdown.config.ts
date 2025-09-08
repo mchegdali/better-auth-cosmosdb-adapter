@@ -1,4 +1,11 @@
-import { defineConfig } from "tsdown";
+import { defineConfig, type NormalizedFormat } from "tsdown";
+
+const formatExtensionMap: { [key in NormalizedFormat]: string } = {
+  es: ".mjs",
+  cjs: ".cjs",
+  iife: ".js",
+  umd: ".js",
+};
 
 export default defineConfig({
   // Entry point - will be created as src/index.ts
@@ -30,8 +37,6 @@ export default defineConfig({
 
   // Custom output file extensions for CJS only
   outExtensions: ({ format }) => ({
-    js: format === "cjs" ? ".cjs" : ".js",
+    js: formatExtensionMap[format],
   }),
-
-  exports: true,
 });
