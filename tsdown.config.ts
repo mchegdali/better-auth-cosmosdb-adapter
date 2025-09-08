@@ -32,10 +32,11 @@ export default defineConfig({
   platform: "node",
   target: "node22",
 
+  minify: true,
+
   // Enable tree shaking for optimal bundle size
   treeshake: true,
 
-  // Custom output file extensions for CJS only
   outExtensions: ({ format }) => ({
     js: formatExtensionMap[format],
   }),
