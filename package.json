@@ -1,6 +1,9 @@
 {
   "private": false,
   "name": "@mchegdali/better-auth-cosmosdb-adapter",
+  "repository": {
+    "url": "https://github.com/mchegdali/better-auth-cosmosdb-adapter"
+  },
   "version": "1.0.9",
   "description": "CosmosDB database adapter for Better-Auth",
   "type": "module",
