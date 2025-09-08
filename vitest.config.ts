@@ -1,8 +1,10 @@
 import { loadEnvFile } from "node:process";
-import { configDefaults, defineConfig } from "vitest/config";
+import { defineConfig } from "vitest/config";
 
 export default defineConfig((_config) => {
-  loadEnvFile();
+  if (!process.env.CI) {
+    loadEnvFile();
+  }
   return {
     test: {
       // Test environment for Node.js testing
