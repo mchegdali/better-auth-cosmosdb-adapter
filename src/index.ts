@@ -114,6 +114,8 @@ export function cosmosdbAdapter(
             conditionStr = `CONTAINS(c.${fieldName}, ${paramName})`;
           } else if (operator === "in") {
             conditionStr = `ARRAY_CONTAINS(${paramName}, c.${fieldName})`;
+          } else if (operator === "not_in") {
+            conditionStr = `NOT ARRAY_CONTAINS(${paramName}, c.${fieldName})`;
           } else {
             conditionStr = `c.${fieldName} ${sqlOperators[operator]} ${paramName}`;
           }
