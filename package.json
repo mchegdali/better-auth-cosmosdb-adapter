@@ -22,7 +22,7 @@
     "azure"
   ],
   "author": "Moustapha Chegdali",
-  "license": "MIT",
+  "license": "GPL-3.0-only",
   "devDependencies": {
     "@azure/cosmos": "^4.5.0",
     "@biomejs/biome": "^2.1.4",
