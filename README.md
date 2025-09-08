@@ -75,6 +75,24 @@ npm run test
 pnpm test
 ```
 
+## Troubleshooting
+
+If you are running the tests against a CosmosDB instance, you might encounter the following error:
+
+```bash
+cosmosdb-emulator  | Error: The evaluation period has expired.
+cosmosdb-emulator  | ./cosmosdb-emulator: ERROR: PAL initialization failed. Error: 104
+cosmosdb-emulator  | 
+cosmosdb-emulator exited with code 1
+```
+
+In this case, you need to pull the latest image from the CosmosDB Emulator repository and restart the container.
+
+```bash
+docker pull mcr.microsoft.com/cosmosdb/linux/azure-cosmos-emulator:latest
+docker compose up -d
+```
+
 ## License
 
 GNU General Public License v3.0
