@@ -1,70 +1,88 @@
 {
-  "private": false,
   "name": "@mchegdali/better-auth-cosmosdb-adapter",
-  "repository": {
-    "url": "https://github.com/mchegdali/better-auth-cosmosdb-adapter"
-  },
   "version": "1.0.12",
-  "description": "CosmosDB database adapter for Better-Auth",
-  "type": "module",
-  "scripts": {
-    "build": "tsdown",
-    "dev": "tsdown --watch",
-    "lint": "biome check",
-    "lint:fix": "biome check --fix",
-    "typecheck": "tsc --noEmit",
-    "test": "vitest",
-    "prepublishOnly": "pnpm build"
-  },
+  "private": false,
+  "description": "Azure Cosmos DB (NoSQL) database adapter for Better Auth",
   "keywords": [
-    "better-auth",
-    "cosmosdb",
-    "database",
     "adapter",
     "authentication",
-    "azure"
+    "azure",
+    "better-auth",
+    "cosmosdb",
+    "database"
   ],
-  "author": "Moustapha Chegdali",
   "license": "GPL-3.0-only",
+  "author": "Moustapha Chegdali",
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/mchegdali/better-auth-cosmosdb-adapter.git"
+  },
   "files": [
     "dist"
   ],
-  "devDependencies": {
-    "@azure/cosmos": "^4.5.0",
-    "@biomejs/biome": "^2.1.4",
-    "@types/node": "^22.17.1",
-    "@vitest/coverage-v8": "^3.2.4",
-    "better-auth": "^1.3.9",
-    "tsdown": "0.14.2",
-    "typescript": "^5.9.2",
-    "vitest": "^3.2.4"
-  },
-  "peerDependencies": {
-    "@azure/cosmos": "^4.5.0",
-    "better-auth": "^1.3.9"
-  },
-  "publishConfig": {
-    "access": "public"
-  },
-  "main": "./dist/index.cjs",
-  "module": "./dist/index.mjs",
+  "type": "module",
+  "sideEffects": false,
   "exports": {
     ".": {
-      "import": {
-        "types": "./dist/index.d.mts",
-        "default": "./dist/index.mjs"
-      },
-      "require": {
-        "types": "./dist/index.d.cts",
-        "default": "./dist/index.cjs"
-      }
-    }
+      "types": "./dist/index.d.mts",
+      "default": "./dist/index.mjs"
+    },
+    "./package.json": "./package.json"
   },
-  "typesVersions": {
-    "*": {
-      "*": [
-        "./dist/index.d.mts"
-      ]
-    }
-  }
+  "publishConfig": {
+    "access": "public",
+    "provenance": true
+  },
+  "scripts": {
+    "build": "tsdown",
+    "dev": "tsdown --watch",
+    "fmt": "oxfmt",
+    "fmt:check": "oxfmt --check",
+    "lint": "oxlint --type-aware",
+    "lint:fix": "oxlint --type-aware --fix",
+    "typecheck": "tsc --noEmit",
+    "knip": "knip",
+    "test": "vitest run",
+    "test:unit": "vitest run --project unit",
+    "test:integration": "vitest run --project integration",
+    "test:watch": "vitest",
+    "coverage": "vitest run --coverage",
+    "smoke:pack": "node scripts/smoke-pack.ts",
+    "check": "pnpm fmt:check && pnpm lint && pnpm typecheck && pnpm knip && pnpm test:unit",
+    "changeset": "changeset",
+    "release": "pnpm build && changeset publish",
+    "prepare": "lefthook install",
+    "prepublishOnly": "pnpm check && pnpm build"
+  },
+  "dependencies": {
+    "better-result": "^3.0.1"
+  },
+  "devDependencies": {
+    "@arethetypeswrong/core": "^0.18.5",
+    "@azure/cosmos": "^4.10.1",
+    "@better-auth/test-utils": "^1.7.10",
+    "@changesets/cli": "^3.0.3",
+    "@types/node": "^24.19.2",
+    "@vitest/coverage-v8": "^5.0.5",
+    "better-auth": "^1.7.10",
+    "eslint-plugin-security": "^4.2.0",
+    "fast-check": "^4.10.2",
+    "knip": "^6.41.0",
+    "lefthook": "^2.2.2",
+    "oxfmt": "^0.73.0",
+    "oxlint": "^1.88.0",
+    "oxlint-tsgolint": "^7.0.2004",
+    "publint": "^0.3.25",
+    "tsdown": "^0.23.1",
+    "typescript": "^7.0.2",
+    "vitest": "^5.0.5"
+  },
+  "peerDependencies": {
+    "@azure/cosmos": "^4.10.0",
+    "better-auth": "^1.7.0"
+  },
+  "engines": {
+    "node": ">=22.12.0"
+  },
+  "packageManager": "pnpm@10.28.0"
 }
