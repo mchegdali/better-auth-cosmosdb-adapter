@@ -1,0 +1,82 @@
+name: CI
+
+on:
+  pull_request:
+  push:
+    branches-ignore: [main] # main is covered by the release workflow, which calls this one.
+  workflow_call:
+
+permissions:
+  contents: read
+
+env:
+  # Git hooks are for local commits only.
+  LEFTHOOK: "0"
+
+jobs:
+  check:
+    name: Format, lint, types, package
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v5
+      - uses: pnpm/action-setup@v4
+      - uses: actions/setup-node@v5
+        with:
+          node-version-file: .nvmrc
+          cache: pnpm
+      - run: pnpm install --frozen-lockfile
+      - run: pnpm fmt:check
+      - run: pnpm lint
+      - run: pnpm typecheck
+      - run: pnpm knip
+      # Builds with publint + are-the-types-wrong, then installs the packed tarball and imports it.
+      - run: pnpm build
+      - run: pnpm smoke:pack
+
+  unit:
+    name: Unit tests (Node.js ${{ matrix.node }})
+    runs-on: ubuntu-latest
+    strategy:
+      matrix:
+        node: [22, 24]
+    steps:
+      - uses: actions/checkout@v5
+      - uses: pnpm/action-setup@v4
+      - uses: actions/setup-node@v5
+        with:
+          node-version: ${{ matrix.node }}
+          cache: pnpm
+      - run: pnpm install --frozen-lockfile
+      - run: pnpm test:unit
+
+  integration:
+    name: Integration tests (Cosmos DB emulator)
+    runs-on: ubuntu-latest
+    services:
+      cosmosdb:
+        image: mcr.microsoft.com/cosmosdb/linux/azure-cosmos-emulator:vnext-preview
+        ports:
+          - 8081:8081
+    env:
+      COSMOS_DB_ENDPOINT: http://127.0.0.1:8081
+      # Well-known key of the local emulator, not a secret.
+      COSMOS_DB_KEY: C2y6yDjf5/R+ob0N8A7Cgv30VRDJIWEHLM+4QDU5DE2nQ9nDuVTqobD4b8mGGyPMbIZnqyMsEcaGQy67XIw/Jw==
+      COSMOS_DB_DATABASE_NAME: better-auth-cosmosdb
+    steps:
+      - uses: actions/checkout@v5
+      - uses: pnpm/action-setup@v4
+      - uses: actions/setup-node@v5
+        with:
+          node-version-file: .nvmrc
+          cache: pnpm
+      - run: pnpm install --frozen-lockfile
+      - name: Wait for the emulator
+        run: |
+          for attempt in $(seq 1 90); do
+            if curl --silent --fail --output /dev/null "$COSMOS_DB_ENDPOINT/"; then exit 0; fi
+            sleep 2
+          done
+          echo "::error::The Cosmos DB emulator did not become ready in 3 minutes."
+          exit 1
+      # Unit + integration tests together, so coverage thresholds see the whole picture.
+      - run: pnpm coverage
