@@ -1,0 +1,48 @@
+{
+  "$schema": "https://docs.renovatebot.com/renovate-schema.json",
+  "extends": ["config:recommended", ":semanticCommitTypeAll(chore)"],
+  "schedule": ["before 6am on monday"],
+  "timezone": "Etc/UTC",
+  "rangeStrategy": "bump",
+  "lockFileMaintenance": { "enabled": true, "schedule": ["before 6am on monday"] },
+  "packageRules": [
+    {
+      "description": "Peer ranges are a public contract: only widen them, by hand, with a changeset.",
+      "matchDepTypes": ["peerDependencies"],
+      "rangeStrategy": "widen"
+    },
+    {
+      "groupName": "oxc toolchain",
+      "matchPackageNames": ["oxlint", "oxfmt", "oxlint-tsgolint"]
+    },
+    {
+      "groupName": "vitest",
+      "matchPackageNames": ["vitest", "@vitest/**"]
+    },
+    {
+      "groupName": "better-auth",
+      "matchPackageNames": ["better-auth", "@better-auth/**"]
+    },
+    {
+      "groupName": "typescript toolchain",
+      "matchPackageNames": [
+        "typescript",
+        "tsdown",
+        "publint",
+        "@arethetypeswrong/core",
+        "@types/node"
+      ]
+    },
+    {
+      "description": "Automerge low-risk development tooling once CI is green.",
+      "matchDepTypes": ["devDependencies"],
+      "matchUpdateTypes": ["minor", "patch"],
+      "automerge": true
+    },
+    {
+      "description": "Keep Node.js types on the development baseline (Node.js 24); CI also tests Node.js 22.",
+      "matchPackageNames": ["@types/node"],
+      "allowedVersions": "<25"
+    }
+  ]
+}

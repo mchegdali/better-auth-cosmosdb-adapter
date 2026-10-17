@@ -1,0 +1,11 @@
+# Git hooks, installed by `pnpm install` (see the "prepare" script).
+pre-commit:
+  parallel: true
+  jobs:
+    - name: format
+      glob: "*.{ts,mts,js,mjs,json,md,yml,yaml}"
+      run: pnpm exec oxfmt --no-error-on-unmatched-pattern {staged_files}
+      stage_fixed: true
+    - name: lint
+      glob: "*.{ts,mts,js,mjs}"
+      run: pnpm exec oxlint --type-aware {staged_files}
